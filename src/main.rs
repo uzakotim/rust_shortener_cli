@@ -17,13 +17,20 @@ fn main() {
             .json(&serde_json::json!({ "originalUrl": url }))
             .send()
         {
-            Ok(response) => match response.json() {
+            Ok(response) => {
+                if !response.status().is_success() {
+                    eprintln!("Server returned error: {} - {}", 
+                              response.status(), 
+                              response.text().unwrap_or_default());
+                    std::process::exit(1);
+                }
+                match response.json() {
                 Ok(json) => json,
                 Err(e) => {
                     eprintln!("Failed to parse response: {}", e);
                     std::process::exit(1);
                 }
-            },
+            }},
             Err(e) => {
                 eprintln!("Request failed: {}", e);
                 std::process::exit(1);
